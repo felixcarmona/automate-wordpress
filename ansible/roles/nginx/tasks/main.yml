@@ -1,0 +1,26 @@
+- name: install nginx
+  apt: pkg=nginx
+  sudo: yes
+
+- name: Create site root directory
+  file: path="{{ site_root }}" state=directory
+  sudo: yes
+
+- name: Create site
+  template:
+    src: site.j2
+    dest: "/etc/nginx/sites-available/{{ site_slug }}"
+  sudo: yes
+
+- name: Enable site
+  file:
+    src: "/etc/nginx/sites-available/{{ site_slug }}"
+    dest: "/etc/nginx/sites-enabled/{{ site_slug }}"
+    state: link
+  notify: Restart nginx
+  sudo: yes
+
+- name: Disable default site
+  file: path=/etc/nginx/sites-enabled/default state=absent
+  when: disable_default_site
+  sudo: yes

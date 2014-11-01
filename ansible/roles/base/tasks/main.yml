@@ -1,0 +1,88 @@
+- name: add google nameserver
+  lineinfile: dest=/etc/resolv.conf state=present regexp='^nameserver' line='nameserver 8.8.8.8'
+  sudo: yes
+
+- name: add google nameserver by default
+  lineinfile: dest=/etc/dhcp/dhclient.conf state=present regexp='#prepend domain-name-servers' line='prepend domain-name-servers 8.8.8.8;'
+  sudo: yes
+
+- name: using en_US.UTF-8 locale as LC_ALL
+  lineinfile: dest="/etc/environment" line="LC_ALL=\"en_US.UTF-8\""
+  sudo: yes
+
+- name: install python-pycurl to use apt-repository
+  apt: pkg=python-pycurl
+  sudo: yes
+
+- name: install required packages
+  apt: pkg={{ item }}
+  with_items:
+    - vim
+    - git
+    - ansible
+    - curl
+    - build-essential
+    - python-pip
+    - unzip
+    - sendmail
+    - vsftpd
+  sudo: yes
+
+- name: FTP enable write_enable
+  lineinfile: dest=/etc/vsftpd.conf
+              state=present
+              regexp='^(.*)#write_enable=YES$'
+              line='write_enable=YES'
+              backup=yes
+              backrefs=yes
+  notify: Restart vsftpd
+  sudo: yes
+
+- name: Create swap file
+  command: fallocate -l 4G /swapfile
+           creates="/swapfile"
+  tags:
+    - swap.file.create
+  sudo: yes
+
+- name: Change swap file permissions
+  file: path="/swapfile"
+        owner=root
+        group=root
+        mode=0600
+  tags:
+    - swap.file.permissions
+  sudo: yes
+
+- name: "Check swap file type"
+  command: file /swapfile
+  register: swapfile
+  tags:
+    - swap.file.mkswap
+  sudo: yes
+
+- name: Make swap file
+  command: "mkswap /swapfile"
+  when: swapfile.stdout.find('swap file') == -1
+  tags:
+    - swap.file.mkswap
+  sudo: yes
+
+- name: Write swap entry in fstab
+  mount: name=none
+         src=/swapfile
+         fstype=swap
+         opts=sw
+         passno=0
+         dump=0
+         state=present
+  tags:
+    - swap.fstab
+  sudo: yes
+
+- name: Mount swap
+  command: "swapon /swapfile"
+  when: ansible_swaptotal_mb < 1
+  tags:
+    - swap.file.swapon
+  sudo: yes

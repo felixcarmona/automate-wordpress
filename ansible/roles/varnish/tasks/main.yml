@@ -1,0 +1,17 @@
+- name: install varnish
+  apt: pkg=varnish
+  sudo: yes
+
+- name: Create varnish config service
+  template:
+    src: default.vcl.j2
+    dest: /etc/varnish/default.vcl
+  sudo: yes
+  notify: Restart varnish
+
+- name: Create default varnish daemon
+  template:
+    src: varnish.j2
+    dest: /etc/default/varnish
+  sudo: yes
+  notify: Restart varnish

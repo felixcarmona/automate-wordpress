@@ -1,0 +1,31 @@
+{
+    "builders": [
+        {
+            "type": "digitalocean",
+            "api_token": "put_your_digitalocean_api2_token_here",
+            "snapshot_name": "blog",
+            "image": "ubuntu-14-04-x64",
+            "region": "nyc3",
+            "size": "512MB"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "file",
+            "source": "ansible",
+            "destination": "/ansible"
+        },
+        {
+            "type": "shell",
+            "script": "install_ansible.sh"
+        },
+        {
+            "type": "ansible-local",
+            "staging_directory": "/ansible",
+            "playbook_file": "ansible/playbook.yml",
+            "extra_arguments": "--extra-vars=@/ansible/config/production.json"
+        }
+    ]
+}
+
+

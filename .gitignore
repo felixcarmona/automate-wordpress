@@ -1,0 +1,3 @@
+.vagrant/
+vagrant_shared/
+packer.json

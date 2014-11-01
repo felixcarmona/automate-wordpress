@@ -1,0 +1,80 @@
+- name: create database with mysql user without password
+  shell: mysql -u '{{ mysql_user }}' -e "CREATE DATABASE IF NOT EXISTS {{ mysql_db }};"
+  when: not mysql_password
+  sudo: False
+
+- name: create database with mysql user + password
+  shell: mysql -u '{{ mysql_user }}' -p '{{ mysql_password }}' -e "CREATE DATABASE IF NOT EXISTS {{ mysql_db }};"
+  when: mysql_password
+  sudo: False
+
+- name: Ensure that the blog path exists
+  shell: "mkdir -p {{ blog_path }}"
+  sudo: yes
+
+- name: Check if the blog_path is empty
+  shell: "ls -A {{ blog_path }} | grep -v .gitkeep | grep -v wp-config.php | grep -v www.pid || true"
+  register: blog_exist
+  sudo: yes
+
+- name: Download wordpress
+  get_url: url=http://wordpress.org/latest.tar.gz dest=/tmp/wordpress.tar.gz
+  when: not blog_exist.stdout
+
+- name: Unpack wordpress
+  shell: tar -xzf /tmp/wordpress.tar.gz chdir=/tmp
+  when: not blog_exist.stdout
+
+- name: Move wordpress files to blog path
+  shell: "mv -f /tmp/wordpress/* {{ blog_path }}"
+  when: not blog_exist.stdout
+  sudo: yes
+
+- name: Create wp-config.php file
+  template:
+    src: wp-config.php.j2
+    dest: "{{ blog_path }}/wp-config.php"
+  sudo: yes
+
+- name: Create the hhvm server log directory
+  file: path="{{ hhvm_server_log_directory }}" state=directory
+  sudo: yes
+
+- name: Create the hhvm server log file
+  file: path="{{ hhvm_server_log_directory }}/hhvm.log" state=touch
+  sudo: yes
+
+- name: Create hhvm server service
+  template:
+    src: bloghhvm.conf.j2
+    dest: /etc/init/bloghhvm.conf
+  sudo: yes
+
+- name: Ensure that the varnish-http-purge plugin path exists
+  shell: "mkdir -p {{ blog_path }}/wp-content/plugins/varnish-http-purge"
+  sudo: yes
+
+- name: Check if the varnish-http-purge plugin folder is empty
+  shell: "ls -A {{ blog_path }}/wp-content/plugins/varnish-http-purge || true"
+  register: varnish_http_purge_exists
+  sudo: yes
+
+- name: Download wordpress plugin Varnish HTTP Purge
+  get_url: url=http://downloads.wordpress.org/plugin/varnish-http-purge.zip dest=/tmp/varnish-http-purge.zip
+
+- name: Unzip Varnish HTTP Purge
+  shell: unzip /tmp/varnish-http-purge.zip chdir=/tmp
+  when: not varnish_http_purge_exists.stdout
+
+- name: Move Varnish HTTP Purge plugin files to blog plugin path
+  shell: "mv -f /tmp/varnish-http-purge/* {{ blog_path }}/wp-content/plugins/varnish-http-purge"
+  when: not varnish_http_purge_exists.stdout
+  sudo: yes
+
+- name: Restart hhvm server of the blog
+  service: name=bloghhvm state=restarted
+  sudo: yes
+
+- name: Set default permalink & enable varnish http purge plugin on first install
+  lineinfile: dest="{{ blog_path }}/wp-admin/install.php" regexp="PERMALINK + ENABLE VARNISH HTTP PURGE" insertafter="wp_install\(" line="/* PERMALINK + ENABLE VARNISH HTTP PURGE */ $wpdb->update($wpdb->options, array('option_value' => '/%category%/%postname%-%post_id%'), array('option_name' => 'permalink_structure') ); $wpdb->update($wpdb->options, array('option_value' => 'a:1:{i:0;s:41:\"varnish-http-purge/varnish-http-purge.php\";}'), array('option_name' => 'active_plugins')); $wpdb->update($wpdb->options, array('option_value' => 'a:0:{}'), array('option_name' => 'recently_activated')); $wpdb->update($wpdb->options, array('option_value' => time()), array('option_name' => '_transient_timeout_plugin_slugs'));"
+  sudo: yes

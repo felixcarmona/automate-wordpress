@@ -1,0 +1,7 @@
+- name: install mysql
+  apt: pkg={{ item }}
+  with_items:
+    - python-selinux
+    - mysql-server
+    - python-mysqldb
+  sudo: yes

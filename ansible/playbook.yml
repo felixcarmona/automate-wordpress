@@ -1,0 +1,32 @@
+- hosts:
+    - blog
+    - 127.0.0.1
+
+  vars:
+    varnish_port: 80
+    nginx_port: 8080
+    hhvm_fastcgi_port: 9000
+    path: /var/www/blog
+
+  roles:
+    - role: base
+    - role: hhvm
+    - role: mysql
+    - role: nginx
+      site_server_name: "{{ domains }}"
+      site_root: "{{ path }}"
+      site_slug: blog
+      fastcgi_port: "{{ hhvm_fastcgi_port }}"
+      port: "{{ nginx_port }}"
+      disable_default_site: true
+    - role: varnish
+      port: "{{ varnish_port }}"
+      nginx_port: "{{ nginx_port }}"
+    - role: wordpress
+      hhvm_server_port: "{{ hhvm_fastcgi_port }}"
+      hhvm_server_log_directory: /var/log/blog
+      mysql_db: blog
+      mysql_user: root
+      mysql_password: ~
+      mysql_host: localhost
+      blog_path: "{{ path }}"
