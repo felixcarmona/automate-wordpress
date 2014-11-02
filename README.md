@@ -16,6 +16,7 @@ This occurs when editing, publishing, commenting or deleting an item, and when c
 
 - FTP Server to auto-install plugins, themes, etc
 - SMTP Server to be allowed to send mails
+- Swap partition
 - Best permalink format configured for SEO
 
 ## Requirements
