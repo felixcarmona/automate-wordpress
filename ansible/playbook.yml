@@ -1,6 +1,5 @@
 - hosts:
     - blog
-    - 127.0.0.1
 
   vars:
     varnish_port: 80

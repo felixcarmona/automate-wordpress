@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
     config.vm.provision "ansible" do |ansible|
         ansible.playbook = "ansible/playbook.yml"
-        ansible.inventory_path = "ansible/hosts_vagrant"
+        ansible.inventory_path = "ansible/config/host_vagrant"
         ansible.extra_vars = "ansible/config/vagrant.json"
         ansible.host_key_checking = false
         #ansible.verbose = "v"
