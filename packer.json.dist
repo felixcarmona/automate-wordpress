@@ -23,6 +23,7 @@
             "type": "ansible-local",
             "staging_directory": "/ansible",
             "playbook_file": "ansible/playbook.yml",
+            "inventory_file": "ansible/config/host_local",
             "extra_arguments": "--extra-vars=@/ansible/config/production.json"
         }
     ]
