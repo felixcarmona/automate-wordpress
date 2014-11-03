@@ -1,3 +1,0 @@
-[blog]
-192.168.50.101 ansible_ssh_user=vagrant ansible_ssh_port=22
-

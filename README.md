@@ -47,9 +47,30 @@ You should run this in your server.
 
 First configure the ``ansible/config/production.yml`` file to set your correct server domains.
 
-Then execute ``ansible-playbook ansible/playbook.yml -c local -i "127.0.0.1, --extra-vars=@ansible/config/production.json"`` in your terminal (You must be in this project directory path)
+Then execute ``ansible-playbook ansible/playbook.yml -c local -i ansible/config/host_local --extra-vars=@ansible/config/production.json"`` in your terminal (You must be in this project directory path)
 
 You can access to your new blog opening ``http://yourowndomain.com`` in your browser.
+
+
+## Remote provisioning on an existent machine
+
+Edit your ``ansible/config/host_production`` file and set the domain of your machine.
+
+Then execute the following command:
+
+``ansible-playbook ansible/playbook.yml -i ansible/config/host_production --extra-vars=@ansible/config/production.json --user root --ask-pass``
+
+The ``--user root`` indicates the user to log in via ssh
+
+The ``--ask-pass`` will ask you for the ssh password, if you are using a ssh key ignore this parameter
+
+If you use the ``--ask-pass`` in Mac OS X, and you get the following error:
+
+``to use the 'ssh' connection type with passwords, you must install the sshpass program``,
+
+follow the next instructions:
+
+http://thornelabs.net/2014/02/09/ansible-os-x-mavericks-you-must-install-the-sshpass-program.html
 
 
 ## Remote installation in DigitalOcean with Packer
