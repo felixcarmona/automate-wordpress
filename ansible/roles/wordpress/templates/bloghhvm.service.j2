@@ -1,0 +1,13 @@
+[Unit]
+Description=Blog hhvm fastcgi server
+Wants=network.target
+
+[Service]
+Type=simple
+LimitNOFILE=65536
+WorkingDirectory={{ blog_path }}
+ExecStart=/usr/bin/hhvm --mode server -vServer.Type=fastcgi -vServer.Port={{ hhvm_server_port }} >> "{{ hhvm_server_log_directory }}/hhvm.log"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
