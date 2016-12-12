@@ -20,7 +20,6 @@
       disable_default_site: true
     - role: varnish
       port: "{{ varnish_port }}"
-      nginx_port: "{{ nginx_port }}"
     - role: wordpress
       hhvm_server_port: "{{ hhvm_fastcgi_port }}"
       hhvm_server_log_directory: /var/log/blog

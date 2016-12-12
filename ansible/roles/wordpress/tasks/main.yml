@@ -46,8 +46,8 @@
 
 - name: Create hhvm server service
   template:
-    src: bloghhvm.conf.j2
-    dest: /etc/init/bloghhvm.conf
+    src: bloghhvm.service.j2
+    dest: /lib/systemd/system/bloghhvm.service
   sudo: yes
 
 - name: Ensure that the varnish-http-purge plugin path exists
@@ -72,7 +72,7 @@
   sudo: yes
 
 - name: Restart hhvm server of the blog
-  service: name=bloghhvm state=restarted
+  service: name=bloghhvm state=restarted enabled=yes
   sudo: yes
 
 - name: Set default permalink & enable varnish http purge plugin on first install

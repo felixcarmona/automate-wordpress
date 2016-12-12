@@ -7,11 +7,11 @@
     src: default.vcl.j2
     dest: /etc/varnish/default.vcl
   sudo: yes
-  notify: Restart varnish
 
-- name: Create default varnish daemon
+- name: Create varnish service
   template:
-    src: varnish.j2
-    dest: /etc/default/varnish
+    src: varnish.service.j2
+    dest: /lib/systemd/system/bloghhvm.service
   sudo: yes
   notify: Restart varnish
+
